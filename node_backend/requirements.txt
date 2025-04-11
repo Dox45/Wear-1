@@ -1,0 +1,4 @@
+sqlalchemy
+dotenv
+fastapi
+pydantic
