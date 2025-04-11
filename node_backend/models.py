@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.sql import func
-from .database import Base
+from database import Base
+from sqlalchemy.orm import relationship
 
 class Device(Base):
     __tablename__ = "devices"
@@ -25,7 +26,7 @@ class Admin(Base):
 
 class Alert(Base):
     __tablename__ = "alert"
-    id = Column(Integre, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"))
     temperature = Column(Float)
     alert_type = Column(String)  # "high" or "low"

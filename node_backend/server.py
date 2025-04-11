@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
-from . import models, schemas, database
+import models, schema, database
 
 models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI()
@@ -26,7 +26,7 @@ def send_alert(device_name: str, temperature: float, alert_type: str):
 
 
 @app.post("/send-temp/")
-def receive_temp(data: schemas.TemperatureBase, db: Session = Depends(get_db)):
+def receive_temp(data: schema.TemperatureBase, db: Session = Depends(get_db)):
     device = db.query(models.Device).filter_by(name=data.device_name).first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
@@ -45,20 +45,20 @@ def receive_temp(data: schemas.TemperatureBase, db: Session = Depends(get_db)):
 
 
 @app.post("/login/")
-def login(auth: schemas.DeviceAuth, db: Session = Depends(get_db)):
+def login(auth: schema.DeviceAuth, db: Session = Depends(get_db)):
     device = db.query(models.Device).filter_by(name=auth.device_name, password=auth.password).first()
     if not device:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return {"msg": "Login successful"}
 
 @app.post("/admin/login/")
-def admin_login(auth: schemas.AdminAuth, db: Session = Depends(get_db)):
+def admin_login(auth: schema.AdminAuth, db: Session = Depends(get_db)):
     admin = db.query(models.Admin).filter_by(username=auth.username, password=auth.password).first()
     if not admin:
         raise HTTPException(status_code=401, detail="Invalid admin credentials")
     return {"msg": "Admin login successful"}
 
-@app.get("/admin/readings/{device_name}", response_model=list[schemas.ReadingOut])
+@app.get("/admin/readings/{device_name}", response_model=list[schema.ReadingOut])
 def get_readings(device_name: str, db: Session = Depends(get_db)):
     device = db.query(models.Device).filter_by(name=device_name).first()
     if not device:
@@ -67,7 +67,7 @@ def get_readings(device_name: str, db: Session = Depends(get_db)):
     readings = db.query(models.TemperatureReading).filter_by(device_id=device.id).order_by(models.TemperatureReading.timestamp.desc()).all()
     return readings
 
-@app.get("/admin/alerts", response_model=list[schemas.AlertOut])
+@app.get("/admin/alerts", response_model=list[schema.AlertOut])
 def get_alerts(db: Session = Depends(get_db)):
     alerts = db.query(models.Alert).order_by(models.Alert.timestamp.desc()).all()
     return alerts
