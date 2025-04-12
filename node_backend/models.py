@@ -1,7 +1,10 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.sql import func
-from database import Base
+# from database import Base
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 class Device(Base):
     __tablename__ = "devices"

@@ -1,9 +1,19 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 import models, schema, database
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Replace with your frontend URL in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 HIGH_THRESHOLD = 30.0
 LOW_THRESHOLD = 20.0
@@ -71,3 +81,11 @@ def get_readings(device_name: str, db: Session = Depends(get_db)):
 def get_alerts(db: Session = Depends(get_db)):
     alerts = db.query(models.Alert).order_by(models.Alert.timestamp.desc()).all()
     return alerts
+
+@app.get("/device/{device_name}", response_model=list[schema.ReadingOut])
+def get_output(device_name: str, db: Session = Depends(get_db)):
+    device = db.query(models.Device).filter_by(name=device_name).first()
+    if not device:
+        raise HTTPException(status_code=404, detail="Device  not found")
+    readings = db.query(models.TemperatureReading).filter_by(device_id=device_id).order_by(models.TemperatureReading.timestamp.desc())
+    return readings
